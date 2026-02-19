@@ -1,42 +1,37 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../../../lib/firebase";
+import { auth } from "../../../lib/firebase";
 
 export default function Signup() {
+  const router = useRouter();
+
   async function handleSignup(e) {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
-    await setDoc(doc(db, "users", userCredential.user.uid), {
-      email,
-      role: "developer",
-      createdAt: Date.now()
-    });
-
-    window.location.href = "/dashboard/developer";
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      // After signup, redirect to login
+      router.push("/login");
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   return (
     <main className="container">
-      <div className="card">
-        <h2>Create Account</h2>
-
+      <div className="card" style={{ maxWidth: "500px", margin: "50px auto", textAlign: "center" }}>
+        <h2>Sign Up</h2>
         <form onSubmit={handleSignup}>
-          <input name="email" placeholder="Email" required />
-          <br /><br />
+          <input name="email" type="email" placeholder="Email" required />
           <input name="password" type="password" placeholder="Password" required />
-          <br /><br />
           <button className="button">Sign Up</button>
         </form>
+        <p style={{ marginTop: "12px", color: "var(--muted)" }}>
+          Already have an account? <a href="/login">Login</a>
+        </p>
       </div>
     </main>
   );
